@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: nexus-ai
+    runtime: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NEXUS_AI_API_KEY
+        sync: false
+      - key: NEXUS_AI_MODEL
+        value: gpt-4o-mini

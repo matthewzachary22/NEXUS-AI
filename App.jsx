@@ -60,25 +60,116 @@ export default function App() {
 
   async function buildPlan() {
     if (!prompt.trim() || loading) return;
-    setLoading(true); setError(''); setPlan('');
+
+    setLoading(true);
+    setError('');
+    setPlan('');
+
     try {
       const response = await fetch('/api/ai/plan', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ prompt: prompt.trim(), mode })
       });
+
       const data = await response.json();
-      if (!response.ok) throw new Error(data.error || 'NEXUS could not create a plan.');
-      setPlan(data.plan); setPlanTitle(data.title || 'New project');
-      setProjects((old) => [{ id: Date.now().toString(), title: data.title || 'New project', mode, status: 'Plan generated', updatedAt: 'Just now' }, ...old]);
-      setView('overview');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong. Try again.');
-    } finally { setLoading(false); }
+
+      if (!response.ok) {
+        throw new Error(data.error || 'NEXUS could not create a plan.');
+      }
+
+      setPlan(data.plan);
+      setPlanTitle(data.title || 'New project');
+
+      setProjects((old) => [{
+        id: Date.now().toString(),
+        title: data.title || 'New project',
+        mode,
+        status: 'Plan generated',
+        updatedAt: 'Just now'
+      }, ...old]);
+
+    } catch {
+      const title = prompt.trim().slice(0, 60) || selected.label + ' project';
+
+      const features = {
+        game: [
+          'Define the game objective and progression.',
+          'Plan player movement and camera controls.',
+          'Design levels, obstacles, and checkpoints.',
+          'Add menus, settings, and saving.'
+        ],
+        code: [
+          'Design the user interface.',
+          'Plan the data structure.',
+          'Build core features and API routes.',
+          'Test and document the application.'
+        ],
+        web: [
+          'Create a responsive homepage.',
+          'Add navigation and content sections.',
+          'Design mobile-friendly layouts.',
+          'Add accessible forms and interactions.'
+        ],
+        cyber: [
+          'Create an isolated practice lab.',
+          'Set defensive learning objectives.',
+          'Study configurations and security logs.',
+          'Document findings and protections.'
+        ],
+        learn: [
+          'Define learning objectives.',
+          'Create short lessons and examples.',
+          'Add interactive quizzes.',
+          'Track learning progress.'
+        ]
+      };
+
+      const offlinePlan = [
+        'NEXUS OFFLINE PLANNER',
+        'This is a built-in template, not a live AI response.',
+        '',
+        'PROJECT: ' + title,
+        '',
+        'PROJECT IDEA',
+        prompt.trim(),
+        '',
+        'CORE FEATURES',
+        ...(features[mode] || features.game),
+        '',
+        'BUILD MILESTONES',
+        '1. Plan the design.',
+        '2. Build the first working version.',
+        '3. Test and improve it.',
+        '4. Polish and prepare to share.',
+        '',
+        'NEXT STEP',
+        'Start by building the smallest working feature.'
+      ].join('\n');
+
+      setPlan(offlinePlan);
+      setPlanTitle(title);
+
+      setProjects((old) => [{
+        id: Date.now().toString(),
+        title,
+        mode,
+        status: 'Offline plan generated',
+        updatedAt: 'Just now'
+      }, ...old]);
+
+      setError('Live AI unavailable. Built-in offline planner was used.');
+    } finally {
+      setLoading(false);
+    }
   }
 
   function sample(item) {
-    setMode(item.id); setView('overview'); setPrompt(item.prompt); setPlan(''); setError('');
+    setMode(item.id);
+    setView('overview');
+    setPrompt(item.prompt);
+    setPlan('');
+    setError('');
   }
 
   return (
@@ -165,4 +256,4 @@ export default function App() {
       </main>
     </div>
   );
-}
+        }
